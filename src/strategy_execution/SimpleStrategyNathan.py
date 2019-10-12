@@ -16,7 +16,8 @@ from state_machine import state_machine
 from strategy_helpers import team
 
 sys.path.insert(0, dirname+'/..')
-from pygame_simulator.PySim_noise import PYsim
+from robocup_real.pyreal import PyReal
+from robocup_real import UDPSender
 from basic_skills.source.Goalie import Goalie
 
 
@@ -41,7 +42,7 @@ class strategy:
         self.state_machine.reset()
 
 if __name__ == "__main__":
-    game = PYsim(6)
+    game = PyReal(6, senders=[{0: UDPSender(('127.0.0.1', 52343))}, {}])
 
     blue_strategy = strategy(game, is_blue=True)
     yellow_strategy = strategy(game, is_blue=False)

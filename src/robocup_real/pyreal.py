@@ -3,12 +3,14 @@ import sys
 import time
 import numpy as np
 import math
+from collections import defaultdict
 dirname = os.path.dirname(__file__)
 sys.path.insert(0, dirname+'/..')
 from basic_skills.source.robot import robot
 from basic_skills.source.action import action
 from basic_skills.source.helper_functions import mag, convert_local, min_angle, drop_perpendicular, scale_to, mag_with, angle_of
 from basic_skills.source.ball import ball
+from .robot_send import NullSender
 
 '''
 GRsimGame environment documentation
@@ -30,12 +32,20 @@ import pygame
 
 default_formation = [[-1000,0],[-2000, 500], [-2000, -500], [-3000, 1000], [-3000, -1000], [-4500, 0]]
         
-class PYsim:
+class PyReal:
 
     # constant multiplication for x,y velocity actions to match GRsim
     action_scaling_constant = 15.3846
     
     def __init__(self, max_bots_per_team, starting_formation = default_formation, senders = None):
+        """
+        brief: Create a new instance of PyReal.
+        params:
+            max_bots_per_team - max bots per team
+            starting_formation - starting formation
+            senders - A list of [blue, yellow] where both blue and yellow are dicts associating robot index 
+                        to sender. Absence of an entry will result in no sender.
+        """
         pygame.font.init() # you have to call this at the start, 
                                      # if you want to use this module.
         self.font = pygame.font.SysFont('Comic Sans MS', 20)
@@ -45,6 +55,13 @@ class PYsim:
         self.robot_radius = 90
         self.ball_radius = 25
     
+        self.senders = [defaultdict(NullSender), defaultdict(NullSender)]
+        if senders is not None:
+            for t, team in enumerate(senders):
+                for i, send in team.items():
+                    self.senders[t][i] = send
+        print(self.senders)
+        
         self.max_bots_per_team = max_bots_per_team
         self.blue_robots = [robot(True, i, self) for i in range(self.max_bots_per_team)]
         self.yellow_robots = [robot(False, i, self) for i in range(self.max_bots_per_team)]
@@ -52,7 +69,7 @@ class PYsim:
         self.blue_robots_internal = [robot(True, i, self) for i in range(self.max_bots_per_team)]
         self.yellow_robots_internal = [robot(False, i, self) for i in range(self.max_bots_per_team)]
 
-        pygame.display.set_caption('Pysim')
+        pygame.display.set_caption('PYREAL')
 
         self.clock = pygame.time.Clock()
         self.last_tick = pygame.time.get_ticks()
@@ -282,7 +299,7 @@ class PYsim:
     '''
     def update_bot_movement(self, robot, norm_vel, tang_vel, rot_vel, delta_time):
         
-        robot.velocity = robot.velocity*self.accel_rate + convert_local(np.array([norm_vel, tang_vel])*PYsim.action_scaling_constant, robot.rot) * (1-self.accel_rate)
+        robot.velocity = robot.velocity*self.accel_rate + convert_local(np.array([norm_vel, tang_vel])*PyReal.action_scaling_constant, robot.rot) * (1-self.accel_rate)
         robot.rot_vel = robot.rot_vel*self.rot_accel_rate + rot_vel * (1-self.rot_accel_rate)
         
         #limit max speed
@@ -308,9 +325,10 @@ class PYsim:
             kick, chip, norm_vel, tang_vel, rot_vel = (0,0,0,0,0)
         else:
             kick, chip, norm_vel, tang_vel, rot_vel = action
-        
         self.update_bot_kicker(robot, kick, chip)
         self.update_bot_movement(robot, norm_vel, tang_vel, rot_vel, delta_time)
+
+        self.senders[0 if robot.is_blue else 1][robot.id].send(norm_vel, tang_vel, rot_vel, kick, True)  # TODO: dribble
         
     '''
     brief: handle collisions with balls
