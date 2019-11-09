@@ -1,5 +1,11 @@
 import numpy as np
 import random
+import os
+import sys
+dirname = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, dirname+'/..')
+from basic_skills.source.helper_functions import scale_to, rotate_vector
+import math
 
 
 def dist(a, b):
@@ -49,15 +55,27 @@ def get_wall_positions(ball_pos, goal_pos, spacing, robot_count):
     Returns a list of positions to move the robots to.
     """
     delta = goal_pos - ball_pos
-    delta_perp = np.array([-delta[1], delta[0]], dtype=np.float32)
+    delta_norm = scale_to(delta, 1)
+    delta_perp_norm = rotate_vector(delta_norm, np.pi / 2)
     wall_center = ball_pos + delta / 2
-    wall_step = delta_perp * spacing / np.linalg.norm(delta_perp)
+    wall_step = delta_perp_norm * spacing
     wall_len = spacing * (robot_count - 1)
 
-    wall_start = wall_center - wall_step * wall_len / 2
+    wall_start = wall_center - delta_perp_norm * wall_len / 2
 
     pos = wall_start
-    return [wall_start + i * wall_step for i in range(robot_count)]
+    return [wall_start + i * wall_step for i in range(robot_count)], [delta_norm, delta_perp_norm]
+
+
+def assign_wall_positions(robot_pos, p_to, basis):
+    """
+    Returns a permutation OF THE ROBOTS, not the targets!
+    """
+
+    remapped = np.dot(np.linalg.inv(basis), robot_pos.T)
+    sort_key = remapped[1]
+    perm = np.argsort(sort_key)
+    return perm
 
 
 if __name__ == "__main__":
@@ -70,12 +88,16 @@ if __name__ == "__main__":
     fig = plt.figure()
     ax = plt.subplot(111)
     p_from = np.random.rand(6, 2)
-    p_to = np.random.rand(6, 2)
-    ax.scatter(*p_from.T)
-    ax.scatter(*p_to.T)
-    perm = assign_robot_positions(p_from, p_to, 20)
-    for f, t in enumerate(perm):
-        out = np.array([p_from[perm[f]], p_to[perm[t]]]).T
+    p_to, basis = get_wall_positions(np.array([0, 0.5], dtype=np.float32), np.array(
+        [1, 0.5], dtype=np.float32), 0.1, 6)
+    p_to = np.array(p_to, dtype=np.float32)
+    print(p_from)
+    for p in p_from:
+        ax.scatter(*p)
+    ax.scatter(*p_to.T, color='black')
+    perm = assign_wall_positions(p_from, p_to, np.array(basis, dtype=np.float32).T)
+    for tp, fi in zip(p_to, perm):
+        out = np.array([tp, p_from[fi]]).T
         line = Line2D(*out)
         ax.add_line(line)
     ax.set_xlim(0, 1)

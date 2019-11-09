@@ -14,7 +14,7 @@ sys.path.insert(0, dirname+'/..')
 from basic_skills.source.cover import cover
 from basic_skills.source.helper_functions import get_closest, mag
 from basic_skills.source.MoveTo import MoveTo
-from util import assign_robot_positions, get_wall_positions
+from util import assign_wall_positions, get_wall_positions
 
 class wall_strategy(state):
     # assigns actions to robots when the enemy has the ball  
@@ -34,21 +34,23 @@ class wall_strategy(state):
     def assign_robot_positions(self):
         ball_pos = self.team.game.ball.loc
         goal_pos = self.team.my_goal
-        wall_pos = get_wall_positions(ball_pos, goal_pos, 500, len(self.team.field_players))
-        robot_pos = [r.loc for r in self.team.field_players]
-        self.perm = assign_robot_positions(robot_pos, wall_pos, 10, self.perm)
+        self.positions, basis = get_wall_positions(ball_pos, goal_pos, 500, len(self.team.field_players))
+        basis = np.array(basis, dtype=np.float32)
+        robot_pos = np.array([r.loc for r in self.team.field_players], dtype=np.float32)
+        self.perm = assign_wall_positions(robot_pos, self.positions, basis)
 
     def update(self):
         self.assign_robot_positions()
-        for p, mt in zip(self.perm, self.move_tos):
-            mt.target_loc = self.positions[p]
-
+        for p, ri in zip(self.positions, self.perm):
+            facing = self.team.game.ball.loc - p
+            self.move_tos[ri].set_target(p, np.arctan2(*facing))
+            
         # state machine transition 
         if self.team.ball_controler is not None and self.team.ball_controler.is_blue == self.team.is_blue:
             return OFFENSIVE_STRATEGY_STATE_NUMBER
             
-        elif self.team.ball_controler is None:
-            return NEUTRAL_STRATEGY_STATE_NUMBER
+        #elif self.team.ball_controler is None:
+        #    return NEUTRAL_STRATEGY_STATE_NUMBER
             
         return DEFENSIVE_STRATEGY_STATE_NUMBER
 

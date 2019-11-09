@@ -38,6 +38,8 @@ class strategy:
     def update(self):
         self.team.update()
         self.state_machine.run()
+        print('blue' if self.team.is_blue else 'yellow', 'defense' if isinstance(self.state_machine.current_state, wall_strategy) else 'other')
+        #self.defense.update()
 
     def reset(self):
         self.team.game.add_action(Goalie(), self.team.goalie.id, self.team.is_blue)
