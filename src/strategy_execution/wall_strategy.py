@@ -25,9 +25,14 @@ class wall_strategy(state):
 
     def setup(self):
         print("wall", "blue" if self.team.is_blue else "yellow")
-        positions = get_wall_positions(self.team.field_players)
+
+    def assign_robot_positions(self):
         ball_pos = self.team.game.ball.loc
-        #self.assignments = assign_robot_positions(get_wall_positions)
+        goal_pos = self.team.my_goal
+        positions = get_wall_positions(ball_pos, goal_pos, 200, len(self.team.field_players))
+        robot_pos = [r.loc for r in self.team.field_players]
+        self.assignments = [positions[i] for i in assign_robot_positions(robot_pos)]
+
 
     def update(self):
         # state machine transition 

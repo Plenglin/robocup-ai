@@ -18,27 +18,30 @@ def pick_2_indices(count):
     return i, j
 
 
-def assign_robot_positions(from_pos, to_pos, optimize_iterations=10):
+def assign_robot_positions(from_pos, to_pos, optimize_iterations=10, perm=None):
     """
-    The robots start at from_pos and end at to_pos. Returns a list of pairs (from_index, to_index, dist)
+    The robots start at from_pos and end at to_pos. Returns a permutation list
     that optimizes for total distance travelled by all robots.
     """
-    outputs = [(i, i, dist(from_pos[i], to_pos[i]))
-               for i, _ in enumerate(from_pos)]
+    if perm is None:
+        perm = list(range(len(from_pos)))
     for _ in range(optimize_iterations):
-        f, t = pick_2_indices(len(outputs))
-        fa, ta, da = outputs[f]
-        fb, tb, db = outputs[t]
+        f, t = pick_2_indices(len(perm))
+        fa = from_pos[perm[f]]
+        ta = to_pos[perm[f]]
+        da = dist(fa, ta)
+        fb = from_pos[perm[t]]
+        tb = to_pos[perm[t]]
+        db = dist(fb, tb)
 
         # Swapped items
-        sda = dist(from_pos[fa], to_pos[tb])
-        sdb = dist(from_pos[fb], to_pos[ta])
+        sda = dist(fa, tb)
+        sdb = dist(fb, ta)
 
         # If swapping the assignments is more optimal, then do it
         if sda + sdb < da + db:
-            outputs[f] = fa, tb, sda
-            outputs[t] = fb, ta, sdb
-    return outputs
+            perm[f], perm[t] = perm[t], perm[f]
+    return perm
 
 
 def get_wall_positions(ball_pos, goal_pos, spacing, robot_count):
@@ -70,10 +73,9 @@ if __name__ == "__main__":
     p_to = np.random.rand(6, 2)
     ax.scatter(*p_from.T)
     ax.scatter(*p_to.T)
-    assignments = assign_robot_positions(p_from, p_to, 20)
-    for f, t, dist in assignments:
-        print(f, t, dist)
-        out = np.array([p_from[f], p_to[t]]).T
+    perm = assign_robot_positions(p_from, p_to, 20)
+    for f, t in enumerate(perm):
+        out = np.array([p_from[perm[f]], p_to[perm[t]]]).T
         line = Line2D(*out)
         ax.add_line(line)
     ax.set_xlim(0, 1)
