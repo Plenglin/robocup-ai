@@ -49,7 +49,7 @@ def get_wall_positions(ball_pos, goal_pos, spacing, robot_count):
     Returns a list of positions to move the robots to.
     """
     delta = goal_pos - ball_pos
-    delta_perp = np.array(delta[-1], delta[0], dtype=np.float)
+    delta_perp = np.array([-delta[1], delta[0]], dtype=np.float32)
     wall_center = ball_pos + delta / 2
     wall_step = delta_perp * spacing / np.linalg.norm(delta_perp)
     wall_len = spacing * (robot_count - 1)

@@ -10,6 +10,7 @@ sys.path.insert(0, dirname)
 from neutral_strategy import neutral_strategy
 from offensive_strategy import offensive_strategy
 from defensive_strategy import defensive_strategy
+from wall_strategy import wall_strategy
 from passing_strategy import passing_strategy
 from strategy_numbers import *
 from state_machine import state_machine
@@ -26,7 +27,8 @@ class strategy:
     def __init__(self, game, is_blue):
         self.team = team(game, is_blue)
         self.neutral = neutral_strategy(NEUTRAL_STRATEGY_STATE_NUMBER, self.team)
-        self.defense = defensive_strategy(DEFENSIVE_STRATEGY_STATE_NUMBER, self.team)
+        #self.defense = defensive_strategy(DEFENSIVE_STRATEGY_STATE_NUMBER, self.team)
+        self.defense = wall_strategy(DEFENSIVE_STRATEGY_STATE_NUMBER, self.team)
         self.offense = offensive_strategy(OFFENSIVE_STRATEGY_STATE_NUMBER, self.team)
         self.passing = passing_strategy(PASSING_STRATEGY_STATE_NUMBER, self.team)
         self.state_machine = state_machine([self.neutral, self.defense, self.offense, self.passing])
