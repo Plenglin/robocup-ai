@@ -328,7 +328,8 @@ class PyReal:
         self.update_bot_kicker(robot, kick, chip)
         self.update_bot_movement(robot, norm_vel, tang_vel, rot_vel, delta_time)
 
-        self.senders[0 if robot.is_blue else 1][robot.id].send(norm_vel, tang_vel, rot_vel, kick, True)  # TODO: dribble
+        # TODO: velocity, ang velocity, and dribble
+        self.senders[0 if robot.is_blue else 1][robot.id].send(norm_vel, tang_vel, 0, 0, rot_vel, 0, kick, True)
         
     '''
     brief: handle collisions with balls

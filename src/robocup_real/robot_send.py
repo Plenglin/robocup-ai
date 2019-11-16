@@ -4,14 +4,21 @@ import socket
 
 """
 The data is stored as:
+Big Endian
+dx: 4b float, pos error
+dy: 4b float, pos error
+vx: 4b float, velocity
+vy: 4b float, velocity
+da: 4b float, angular error
+w: 4b float, (it's an omega) angular velocity
+flags: 1b uint, see below
+id: 2b uint, a "unique" packet identifier for preventing out-of-order packets
 
-dx: 4b float
-dy: 4b float
-da: 4b float
-flags: 1b uint
-id: 2b uint
+The bits inside flags represent, from LSB to MSB:
+- Should dribble
+- Should kick
 """
-UPDATE_STRUCT_FORMAT = '>fffBH'
+UPDATE_STRUCT_FORMAT = '>ffffffBH'
 
 class NullSender:
   """
@@ -20,7 +27,7 @@ class NullSender:
   def __init__(self):
     pass
 
-  def send(self, dx, dy, a, kick, dribble):
+  def send(self, dx, dy, vx, vy, a, w, kick, dribble):
     pass
 
 class UDPSender:
@@ -33,8 +40,8 @@ class UDPSender:
     self.dest_addr = dest_addr
     self.next_id = 0
 
-  def send(self, dx, dy, a, kick, dribble):
+  def send(self, dx, dy, vx, vy, a, w, kick, dribble):
     flags = (0x02 if kick else 0) | (0x01 if dribble else 0)
-    data = struct.pack(UPDATE_STRUCT_FORMAT, dx, dy, a, flags, self.next_id)
+    data = struct.pack(UPDATE_STRUCT_FORMAT, dx, dy, vx, vy, a, w, flags, self.next_id)
     self.next_id = (self.next_id + 1) & 0xffff  # Keep it within 16 bits
     self.socket.sendto(data, self.dest_addr)
