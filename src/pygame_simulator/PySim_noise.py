@@ -226,12 +226,12 @@ class PYsim:
                 plot_point = self.convert_to_screen_position(np.array(kp[0]))
                 scale = int(kp[1])
                 if scale < 0:
-                    pygame.draw.circle(self.screen, (155,155,0), (int(plot_point[0]), int(plot_point[1])), -scale)
+                    pygame.draw.circle(self.screen, (255,255,255), (int(plot_point[0]), int(plot_point[1])), -scale)
                 else:
-                    pygame.draw.circle(self.screen, (0,155,155), (int(plot_point[0]), int(plot_point[1])), scale)
+                    pygame.draw.circle(self.screen, (255,255,255), (int(plot_point[0]), int(plot_point[1])), scale)
             else:
                 kp = self.convert_to_screen_position(np.array(kp))
-                pygame.draw.circle(self.screen, (155,155,0), (int(kp[0]), int(kp[1])), int(self.ball_radius*self.screen_res[0]/self.field_dims[0])*4)
+                pygame.draw.circle(self.screen, (255,255,255), (int(kp[0]), int(kp[1])), int(self.ball_radius*self.screen_res[0]/self.field_dims[0])*4)
 
     '''
     spinner stuff

@@ -248,7 +248,7 @@ class PyReal:
                     pygame.draw.circle(self.screen, (0,155,155), (int(plot_point[0]), int(plot_point[1])), scale)
             else:
                 kp = self.convert_to_screen_position(np.array(kp))
-                pygame.draw.circle(self.screen, (155,155,0), (int(kp[0]), int(kp[1])), int(self.ball_radius*self.screen_res[0]/self.field_dims[0])*4)
+                pygame.draw.circle(self.screen, (255,0,255), (int(kp[0]), int(kp[1])), int(self.ball_radius*self.screen_res[0]/self.field_dims[0])*4)
 
     '''
     spinner stuff

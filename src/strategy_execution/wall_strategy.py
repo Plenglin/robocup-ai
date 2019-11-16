@@ -25,11 +25,11 @@ class wall_strategy(state):
         self.perm = list(range(len(team.field_players)))
         self.positions = [r.loc for r in self.team.field_players]
         self.move_tos = [MoveTo(p) for p in self.positions]
-        for i, mt in enumerate(self.move_tos):
-            self.team.game.add_action(mt, i, self.team.is_blue)
 
     def setup(self):
         print("wall", "blue" if self.team.is_blue else "yellow")
+        for i, mt in enumerate(self.move_tos):
+            self.team.game.add_action(mt, i, self.team.is_blue)
 
     def assign_robot_positions(self):
         ball_pos = self.team.game.ball.loc
@@ -49,8 +49,8 @@ class wall_strategy(state):
         if self.team.ball_controler is not None and self.team.ball_controler.is_blue == self.team.is_blue:
             return OFFENSIVE_STRATEGY_STATE_NUMBER
             
-        #elif self.team.ball_controler is None:
-        #    return NEUTRAL_STRATEGY_STATE_NUMBER
+        elif self.team.ball_controler is None:
+            return NEUTRAL_STRATEGY_STATE_NUMBER
             
         return DEFENSIVE_STRATEGY_STATE_NUMBER
 

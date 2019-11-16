@@ -38,7 +38,6 @@ class strategy:
     def update(self):
         self.team.update()
         self.state_machine.run()
-        print('blue' if self.team.is_blue else 'yellow', 'defense' if isinstance(self.state_machine.current_state, wall_strategy) else 'other')
         #self.defense.update()
 
     def reset(self):
@@ -60,7 +59,7 @@ if __name__ == "__main__":
     select_id = 0
     select_blue = True
     while 1:
-        _, _, done = game.step()#key_points=yellow_strategy.team.prints)
+        _, _, done = game.step(key_points=blue_strategy.defense.positions)#key_points=yellow_strategy.team.prints)
 
         # reset strategy when game ends
         if done:
